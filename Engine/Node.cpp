@@ -18,8 +18,8 @@ void Node::RebuildID(std::unordered_map<int, Player>& players)
 	for (auto& i : IDs)
 	{
 		const VecI pos = players.at(i.first).GetPos();
-		const int nodeID = GetNodePosition(pos);
-		assert(nodeID != -1);
+		const Position nodeID = GetNodePosition(pos);
+		assert(nodeID != Position::None);
 		i.second = nodeID;
 		nodes[nodeID].AddID(pos, i.first, players);
 	}
@@ -27,7 +27,7 @@ void Node::RebuildID(std::unordered_map<int, Player>& players)
 
 void Node::AddID(VecI pos, int targetID, std::unordered_map<int, Player>& players)
 {
-	const int nodeID = GetNodePosition(pos);
+	const Position nodeID = GetNodePosition(pos);
 	IDs.emplace(targetID, nodeID);
 	if (Split())
 	{
@@ -35,7 +35,7 @@ void Node::AddID(VecI pos, int targetID, std::unordered_map<int, Player>& player
 	}
 	else if(!nodes.empty())
 	{
-		assert(nodeID != -1);
+		assert(nodeID != Position::None);
 		nodes[nodeID].AddID(pos, targetID, players);
 	}
 }
@@ -44,10 +44,10 @@ void Node::Update(VecI pos, int targetID, std::unordered_map<int, Player>& playe
 {
 	if (!nodes.empty())
 	{
-		const int nodeID = GetNodePosition(pos);
-		assert(nodeID != -1);
+		const Position nodeID = GetNodePosition(pos);
+		assert(nodeID != Position::None);
 		auto& id = IDs.at(targetID);
-		if (id == -1)
+		if (id == Position::None)
 		{
 			id = nodeID;
 			nodes[nodeID].AddID(pos, targetID, players);
@@ -78,7 +78,7 @@ void Node::RemoveID(int targetID)
 	else
 	{
 		auto& id = IDs.at(targetID);
-		assert(id != -1);
+		assert(id != Position::None);
 		nodes[id].RemoveID(targetID);
 		IDs.erase(targetID);
 		if (IDs.size() < 2)
@@ -86,13 +86,13 @@ void Node::RemoveID(int targetID)
 			nodes.clear();
 			for (auto& i : IDs)
 			{
-				i.second = -1;
+				i.second = Position::None;
 			}
 		}
 	}
 }
 
-int Node::GetNodePosition(VecI pos)
+Node::Position Node::GetNodePosition(VecI pos)
 {
 	if (!nodes.empty())
 	{
@@ -100,26 +100,26 @@ int Node::GetNodePosition(VecI pos)
 		{
 			if (pos.y < (rect.top + rect.bottom) / 2)
 			{
-				return 0;
+				return Position::TopLeft;
 			}
 			else
 			{
-				return 2;
+				return Position::BottomLeft;
 			}
 		}
 		else
 		{
 			if (pos.y < (rect.top + rect.bottom) / 2)
 			{
-				return 1;
+				return Position::TopRight;
 			}
 			else
 			{
-				return 3;
+				return Position::BottomRight;
 			}
 		}
 	}
-	return -1;
+	return Position::None;
 }
 
 

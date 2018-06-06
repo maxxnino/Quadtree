@@ -8,6 +8,15 @@
 class Node
 {
 public:
+	enum Position
+	{
+		TopLeft = 1,
+		TopRight = 2,
+		BottomLeft = 4,
+		BottomRight = 8,
+		None = 0
+	};
+public:
 	Node(RectI rect, int depth)
 		:
 		rect(rect),
@@ -33,12 +42,12 @@ private:
 
 	bool Split();
 	void RebuildID(std::unordered_map<int, Player>& players);
-	int GetNodePosition(VecI pos);
+	Position GetNodePosition(VecI pos);
 private:
 	std::vector<Node> nodes;
 	std::unordered_map<int,int> IDs;
 	static constexpr int maxDepth = 5;
-	int depth = -1;
+	int depth;
 	RectI rect;
 	std::vector<VecI> points;
 };
