@@ -28,8 +28,8 @@ public:
 		points.emplace_back(VecI(rect.right, (rect.top + rect.bottom) / 2));
 	}
 	void Draw(Graphics& gfx) const;
-	void AddID(VecI pos, int targetID, std::unordered_map<int,Player>& players);
-	void Update(VecI pos, int targetID, std::unordered_map<int,Player>& players);
+	void AddID(RectI targetRect, int targetID, std::unordered_map<int,Player>& players);
+	void Update(RectI targetRect, int targetID, std::unordered_map<int,Player>& players);
 	void RemoveID(int targetID);
 	void Clear()
 	{
@@ -38,15 +38,20 @@ public:
 	}
 	void UpdateCollision(std::unordered_map<int, Player>& players);
 
+	void SwitchAdd(int nodeID, RectI targetRect, int targetID, std::unordered_map<int, Player>& players);
+	void SwitchRemove(int nodeID, int targetID);
+	RectI GetRect() const
+	{
+		return rect;
+	}
 private:
-
 	bool Split();
 	void RebuildID(std::unordered_map<int, Player>& players);
-	Position GetNodePosition(VecI pos);
+	int GetNodePosition(RectI targetRect);
 private:
 	std::vector<Node> nodes;
 	std::unordered_map<int,int> IDs;
-	static constexpr int maxDepth = 5;
+	static constexpr int maxDepth = 6;
 	int depth;
 	RectI rect;
 	std::vector<VecI> points;

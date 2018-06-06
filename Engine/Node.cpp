@@ -17,17 +17,17 @@ void Node::RebuildID(std::unordered_map<int, Player>& players)
 {
 	for (auto& i : IDs)
 	{
-		const VecI pos = players.at(i.first).GetPos();
-		const Position nodeID = GetNodePosition(pos);
+		const RectI targetRect = players.at(i.first).GetRect();
+		const int nodeID = GetNodePosition(targetRect);
 		assert(nodeID != Position::None);
 		i.second = nodeID;
-		nodes[nodeID].AddID(pos, i.first, players);
+		SwitchAdd(nodeID, targetRect, i.first, players);
 	}
 }
 
-void Node::AddID(VecI pos, int targetID, std::unordered_map<int, Player>& players)
+void Node::AddID(RectI targetRect, int targetID, std::unordered_map<int, Player>& players)
 {
-	const Position nodeID = GetNodePosition(pos);
+	const int nodeID = GetNodePosition(targetRect);
 	IDs.emplace(targetID, nodeID);
 	if (Split())
 	{
@@ -36,27 +36,37 @@ void Node::AddID(VecI pos, int targetID, std::unordered_map<int, Player>& player
 	else if(!nodes.empty())
 	{
 		assert(nodeID != Position::None);
-		nodes[nodeID].AddID(pos, targetID, players);
+		SwitchAdd(nodeID, targetRect, targetID, players);
 	}
 }
 
-void Node::Update(VecI pos, int targetID, std::unordered_map<int, Player>& players)
+void Node::Update(RectI targetRect,int targetID, std::unordered_map<int, Player>& players)
 {
 	if (!nodes.empty())
 	{
-		const Position nodeID = GetNodePosition(pos);
+		const int nodeID = GetNodePosition(targetRect);
 		assert(nodeID != Position::None);
 		auto& id = IDs.at(targetID);
 		if (id == Position::None)
 		{
 			id = nodeID;
-			nodes[nodeID].AddID(pos, targetID, players);
+			SwitchAdd(nodeID, targetRect, targetID, players);
 		}
 		else
 		{
-			nodes[id].RemoveID(targetID);
+			int middle = id & nodeID;
+			int removeID = id ^ middle;
+			int addID = nodeID ^ middle;
+			if (removeID)
+			{
+				SwitchRemove(removeID, targetID);
+			}
+			
+			if (addID)
+			{
+				SwitchAdd(addID, targetRect, targetID, players);
+			}
 			id = nodeID;
-			nodes[nodeID].AddID(pos, targetID, players);
 		}
 	}
 	else
@@ -64,7 +74,7 @@ void Node::Update(VecI pos, int targetID, std::unordered_map<int, Player>& playe
 		auto id = IDs.find(targetID);
 		if (id == IDs.end())
 		{
-			AddID(pos, targetID, players);
+			AddID(targetRect,targetID, players);
 		}
 	}
 }
@@ -79,9 +89,9 @@ void Node::RemoveID(int targetID)
 	{
 		auto& id = IDs.at(targetID);
 		assert(id != Position::None);
-		nodes[id].RemoveID(targetID);
+		SwitchRemove(id, targetID);
 		IDs.erase(targetID);
-		if (IDs.size() < 2)
+		if (IDs.size() < 3)
 		{
 			nodes.clear();
 			for (auto& i : IDs)
@@ -92,34 +102,29 @@ void Node::RemoveID(int targetID)
 	}
 }
 
-Node::Position Node::GetNodePosition(VecI pos)
+int Node::GetNodePosition(RectI targetRect)
 {
+	int pos = Position::None;
 	if (!nodes.empty())
 	{
-		if (pos.x < (rect.left + rect.right) / 2)
+		if (nodes[0].GetRect().isOverLap(targetRect))
 		{
-			if (pos.y < (rect.top + rect.bottom) / 2)
-			{
-				return Position::TopLeft;
-			}
-			else
-			{
-				return Position::BottomLeft;
-			}
+			pos |= Position::TopLeft;
 		}
-		else
+		if (nodes[1].GetRect().isOverLap(targetRect))
 		{
-			if (pos.y < (rect.top + rect.bottom) / 2)
-			{
-				return Position::TopRight;
-			}
-			else
-			{
-				return Position::BottomRight;
-			}
+			pos |= Position::TopRight;
+		}
+		if (nodes[2].GetRect().isOverLap(targetRect))
+		{
+			pos |= Position::BottomLeft;
+		}
+		if (nodes[3].GetRect().isOverLap(targetRect))
+		{
+			pos |= Position::BottomRight;
 		}
 	}
-	return Position::None;
+	return pos;
 }
 
 
@@ -148,6 +153,30 @@ void Node::UpdateCollision(std::unordered_map<int, Player>& players)
 					p2.Collision();
 				}
 			}
+		}
+	}
+}
+
+void Node::SwitchAdd(int nodeID, RectI targetRect, int targetID, std::unordered_map<int, Player>& players)
+{
+	assert(nodeID != Position::None);
+	for (int i = 0; i < 4; i++)
+	{
+		if (nodeID & (1 << i))
+		{
+			nodes[i].AddID(targetRect, targetID, players);
+		}
+	}
+}
+
+void Node::SwitchRemove(int nodeID, int targetID)
+{
+	assert(nodeID != Position::None);
+	for (int i = 0; i < 4; i++)
+	{
+		if (nodeID & (1 << i))
+		{
+			nodes[i].RemoveID(targetID);
 		}
 	}
 }

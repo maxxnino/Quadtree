@@ -8,7 +8,12 @@ public:
 		:
 		pos(pos),
 		vel(vel)
-	{}
+	{
+		rect.left = (int)pos.x;
+		rect.top = (int)pos.y;
+		rect.right = rect.left + size;
+		rect.bottom = rect.top + size;
+	}
 	void Draw(Graphics& gfx) const
 	{
 		if (isCollied)
@@ -44,6 +49,10 @@ public:
 			pos.y = Graphics::ScreenHeight - size;
 			vel.y = -vel.y;
 		}
+		rect.left = (int)pos.x;
+		rect.top = (int)pos.y;
+		rect.right = rect.left + size;
+		rect.bottom = rect.top + size ;
 		isCollied = false;
 	}
 	void Collision()
@@ -52,7 +61,7 @@ public:
 	}
 	RectI GetRect() const
 	{
-		return { (int)pos.x , (int)pos.y ,(int)pos.x + size, (int)pos.y + size };
+		return rect;
 	}
 	const inline VecI GetPos() const
 	{
@@ -61,6 +70,7 @@ public:
 private:
 	VecF pos;
 	VecF vel;
+	RectI rect;
 	static constexpr int size = 10;
 	bool isCollied = false;
 };

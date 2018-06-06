@@ -11,13 +11,13 @@ public:
 	{
 		node.Draw(gfx);
 	}
-	void AddTarget(VecI Pos, int ID, std::unordered_map<int, Player>& players)
+	void AddTarget(RectI rect, int ID, std::unordered_map<int, Player>& players)
 	{
-		node.AddID(Pos, ID, players);
+		node.AddID(rect,ID, players);
 	}
-	void UpdateTarget(VecI Pos, int ID, std::unordered_map<int, Player>& players)
+	void UpdateTarget(RectI rect, int ID, std::unordered_map<int, Player>& players)
 	{
-		node.Update(Pos, ID, players);
+		node.Update(rect,ID, players);
 	}
 	void Update(std::unordered_map<int, Player>& players)
 	{
@@ -26,6 +26,10 @@ public:
 	void Clear()
 	{
 		node.Clear();
+	}
+	void Remove(int ID)
+	{
+		node.RemoveID(ID);
 	}
 private:
 	Node node;

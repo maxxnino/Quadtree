@@ -45,7 +45,7 @@ void Game::UpdateModel()
 		if (isUpdate)
 		{
 			p.second.Update(dt);
-			quadTree.UpdateTarget(p.second.GetPos(), p.first, players);
+			quadTree.UpdateTarget(p.second.GetRect(),p.first, players);
 		}
 		
 	}
@@ -71,7 +71,7 @@ void Game::UpdateModel()
 			for (size_t i = 0; i < 10; i++)
 			{
 				players.emplace(curID, Player({ (float)xPos(rng),(float)yPos(rng) }, { (float)(dirX * speed(rng)), (float)(dirY * speed(rng)) }));
-				quadTree.AddTarget(players.at(curID).GetPos(), curID, players);
+				quadTree.AddTarget(players.at(curID).GetRect(),curID, players);
 				curID += 1;
 			}
 		}
@@ -80,11 +80,26 @@ void Game::UpdateModel()
 			isUpdate = !isUpdate;
 		}
 	}
-	if (wnd.kbd.KeyIsPressed('A'))
+	
+	while (!wnd.kbd.KeyIsEmpty())
 	{
-		quadTree.Clear();
-		players.clear();
+		auto e = wnd.kbd.ReadKey();
+		if (e.GetCode() == 'A' && e.IsPress())
+		{
+			quadTree.Clear();
+			players.clear();
+		}
+		if (e.GetCode() == 'S' && e.IsPress())
+		{
+			if (curID > 0)
+			{
+				curID--;
+				quadTree.Remove(curID);
+				players.erase(curID);
+			}
+		}
 	}
+	
 	quadTree.Update(players);
 }
 
