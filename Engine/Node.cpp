@@ -136,8 +136,7 @@ void Node::UpdateCollision(std::unordered_map<int, Player>& players)
 					auto& p2 = players.at(au->first);
 					if (p1.GetRect().isOverLap(p2.GetRect()))
 					{
-						p1.Collision();
-						p2.Collision();
+						p1.CorrectCollision(p2);
 					}
 				}
 			}

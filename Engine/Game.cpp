@@ -101,6 +101,10 @@ void Game::UpdateModel()
 	}
 	
 	quadTree.Update(players);
+	for (auto& p : players)
+	{
+		p.second.ClamScreen();
+	}
 }
 
 void Game::ComposeFrame()
