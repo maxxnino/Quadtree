@@ -126,16 +126,19 @@ void Node::UpdateCollision(std::unordered_map<int, Player>& players)
 	{
 		if (IDs.size() > 1)
 		{
-			auto it = IDs.begin();
-			for (size_t i = 0; i < IDs.size() - 1; i++)
+			for (auto it = IDs.begin(); it != IDs.end(); it++)
 			{
-				auto& p1 = players.at(it->first);
-				it++;
-				auto& p2 = players.at(it->first);
-				if (p1.GetRect().isOverLap(p2.GetRect()))
+				auto au = it;
+				au++;
+				for (; au != IDs.end(); au++)
 				{
-					p1.Collision();
-					p2.Collision();
+					auto& p1 = players.at(it->first);
+					auto& p2 = players.at(au->first);
+					if (p1.GetRect().isOverLap(p2.GetRect()))
+					{
+						p1.Collision();
+						p2.Collision();
+					}
 				}
 			}
 		}

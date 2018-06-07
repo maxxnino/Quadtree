@@ -54,22 +54,22 @@ void Game::UpdateModel()
 		auto e = wnd.mouse.Read();
 		if (e.GetType() == Mouse::Event::Type::LPress)
 		{
-			std::uniform_int_distribution<int> xPos(0, Graphics::ScreenWidth - 10);
-			std::uniform_int_distribution<int> yPos(0, Graphics::ScreenHeight - 10);
-			std::uniform_int_distribution<int> speed(100, 150);
+			std::uniform_int_distribution<int> xPos(0, Graphics::ScreenWidth - 20);
+			std::uniform_int_distribution<int> yPos(0, Graphics::ScreenHeight - 20);
+			std::uniform_int_distribution<int> speed(50, 100);
 			std::uniform_int_distribution<int> dir(0, 1);
 			int dirX = 1;
 			int dirY = 1;
-			if (dir(rng) == 1 )
-			{
-				dirX = -1;
-			}
-			if (dir(rng) == 1)
-			{
-				dirY = -1;
-			}
 			for (size_t i = 0; i < 10; i++)
 			{
+				if (dir(rng) == 1)
+				{
+					dirX = -1;
+				}
+				if (dir(rng) == 1)
+				{
+					dirY = -1;
+				}
 				players.emplace(curID, Player({ (float)xPos(rng),(float)yPos(rng) }, { (float)(dirX * speed(rng)), (float)(dirY * speed(rng)) }));
 				quadTree.AddTarget(players.at(curID).GetRect(),curID, players);
 				curID += 1;

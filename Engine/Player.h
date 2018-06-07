@@ -71,6 +71,6 @@ private:
 	VecF pos;
 	VecF vel;
 	RectI rect;
-	static constexpr int size = 10;
+	static constexpr int size = 20;
 	bool isCollied = false;
 };
