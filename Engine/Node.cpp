@@ -19,7 +19,7 @@ void Node::RebuildID(std::unordered_map<int, Player>& players)
 	{
 		const RectI targetRect = players.at(i.first).GetRect();
 		const int newNodePos = GetNodePosition(targetRect);
-		assert(newNodePos != Position::None);
+		assert(newNodePos);
 		i.second = newNodePos;
 		SwitchAdd(newNodePos, targetRect, i.first, players);
 	}
@@ -34,8 +34,8 @@ void Node::AddID(RectI targetRect, int targetID, std::unordered_map<int, Player>
 		RebuildID(players);
 		return;
 	}
-
-	if(newNodePos)
+	
+	if(newNodePos != 0)
 	{
 		assert(!nodes.empty());
 		SwitchAdd(newNodePos, targetRect, targetID, players);
@@ -47,23 +47,20 @@ void Node::Update(RectI targetRect,int targetID, std::unordered_map<int, Player>
 	if (!nodes.empty())
 	{
 		auto& nodePos = IDs.at(targetID);
-		assert(nodePos != Position::None);
+		assert(nodePos);
 
 		const int prevNodePos = nodePos;
 		nodePos = GetNodePosition(targetRect);
-		assert(nodePos != Position::None);
+		assert(nodePos);
+
+		const int middle = nodePos & prevNodePos;
+		if (middle) SwitchUpdate(middle, targetRect, targetID, players);
 
 		const int addPos = nodePos & ~prevNodePos;
-		const int removePos = prevNodePos & ~nodePos;
-
 		if (addPos) SwitchAdd(addPos, targetRect, targetID, players);
 
+		const int removePos = prevNodePos & ~nodePos;
 		if (removePos) SwitchRemove(removePos, targetID);
-	}
-	else
-	{
-		//assert(IDs.find(targetID) == IDs.end());
-		AddID(targetRect,targetID, players);
 	}
 }
 
@@ -75,7 +72,7 @@ void Node::RemoveID(int targetID)
 	}
 	else
 	{
-		assert(IDs.at(targetID) != Position::None);
+		assert(IDs.at(targetID));
 		SwitchRemove(IDs.at(targetID), targetID);
 		IDs.erase(targetID);
 		if (IDs.size() < 3)
@@ -110,7 +107,7 @@ int Node::GetNodePosition(RectI targetRect)
 		{
 			pos |= Position::BottomRight;
 		}
-		assert(pos != 0);
+		assert(pos);
 	}
 	return pos;
 }
@@ -147,43 +144,37 @@ void Node::UpdateCollision(std::unordered_map<int, Player>& players)
 
 void Node::SwitchAdd(int nodePos, RectI targetRect, int targetID, std::unordered_map<int, Player>& players)
 {
-	assert(nodePos != Position::None);
-	if (nodePos & Position::TopLeft)
+	assert(nodePos);
+	for (int i = 0; i < 4; i++)
 	{
-		nodes[0].AddID(targetRect, targetID, players);
-	}
-	if (nodePos & Position::TopRight)
-	{
-		nodes[1].AddID(targetRect, targetID, players);
-	}
-	if (nodePos & Position::BottomLeft)
-	{
-		nodes[2].AddID(targetRect, targetID, players);
-	}
-	if (nodePos & Position::BottomRight)
-	{
-		nodes[3].AddID(targetRect, targetID, players);
+		if (nodePos & (1 << i))
+		{
+			nodes[i].AddID(targetRect, targetID, players);
+		}
 	}
 }
 
 void Node::SwitchRemove(int nodePos, int targetID)
 {
-	assert(nodePos != Position::None);
-	if (nodePos & Position::TopLeft)
+	assert(nodePos);
+	for (int i = 0; i < 4; i++)
 	{
-		nodes[0].RemoveID(targetID);
+		if (nodePos & (1 << i))
+		{
+			nodes[i].RemoveID(targetID);
+		}
 	}
-	if (nodePos & Position::TopRight)
+}
+
+inline void Node::SwitchUpdate(int nodePos, RectI targetRect, int targetID, std::unordered_map<int, Player>& players)
+{
+	assert(nodePos);
+	for (int i = 0; i < 4; i++)
 	{
-		nodes[1].RemoveID(targetID);
-	}
-	if (nodePos & Position::BottomLeft)
-	{
-		nodes[2].RemoveID(targetID);
-	}
-	if (nodePos & Position::BottomRight)
-	{
-		nodes[3].RemoveID(targetID);
+		if (nodePos & (1 << i))
+		{
+			nodes[i].Update(targetRect, targetID, players);
+		}
 	}
 }
 
