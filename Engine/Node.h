@@ -38,14 +38,14 @@ public:
 	}
 	void UpdateCollision(std::unordered_map<int, Player>& players);
 
-	void SwitchAdd(int nodeID, RectI targetRect, int targetID, std::unordered_map<int, Player>& players);
-	void SwitchRemove(int nodeID, int targetID);
 	RectI GetRect() const
 	{
 		return rect;
 	}
 private:
 	bool Split();
+	inline void SwitchAdd(int nodePos, RectI targetRect, int targetID, std::unordered_map<int, Player>& players);
+	inline void SwitchRemove(int nodePos, int targetID);
 	void RebuildID(std::unordered_map<int, Player>& players);
 	int GetNodePosition(RectI targetRect);
 private:
